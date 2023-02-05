@@ -1,4 +1,4 @@
-class Cell {
+export class Cell {
     constructor(pos, piece) {
         this.pos = pos;
         this.piece = piece;
