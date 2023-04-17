@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect, useContext } from 'react';
 import { Chess } from 'chess.js';
-import { createBoard } from '../../functions';
+import { createBoard, getGameOverState } from '../../functions';
 import Board from '../../components/board';
 import { GameContext } from '../../context/GameContext';
 import { types } from '../../context/actions';
+import GameOver from '../../components/gameover';
 
 const FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 const Game = () => {
@@ -16,10 +17,16 @@ const Game = () => {
 
     const fromPos = useRef();
 
-    const { dispatch } = useContext(GameContext);
+    const { dispatch, gameOver } = useContext(GameContext);
     useEffect(() => {
+        //import from '../../functions'
+        const [gameOver, status] = getGameOverState(chess);
+        if (gameOver) {
+            dispatch({ type: types.GAME_OVER, status, player: chess.turn() });
+            return;
+        }
         dispatch({
-            type: types.SET_TURN, //import types from '../../context/actions'
+            type: types.SET_TURN,
             player: chess.turn(),
             check: chess.inCheck(),
         });
@@ -38,6 +45,10 @@ const Game = () => {
             moves: chess.moves({ square: pos }),
         });
     };
+
+    if (gameOver) {
+        return <GameOver />; //import GameOver from '../../components/gameover';
+    }
 
     return (
         <div className="game">

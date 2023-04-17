@@ -3,8 +3,10 @@ import GameReducer from './GameReducer';
 
 const initialState = {
     possibleMoves: [],
-    turn: 'w', //w or b. w goes first so its the default
+    turn: 'w', //w or b
     check: false, //true if the side to move (current turn) is in check.
+    gameOver: false,
+    status: '', //game over status e.g checkmate or stalemate
 };
 
 export const GameContext = createContext(initialState);
