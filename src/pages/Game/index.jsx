@@ -17,6 +17,13 @@ const Game = () => {
     const fromPos = useRef();
 
     const { dispatch } = useContext(GameContext);
+    useEffect(() => {
+        dispatch({
+            type: types.SET_TURN, //import types from '../../context/actions'
+            player: chess.turn(),
+            check: chess.inCheck(),
+        });
+    }, [fen, dispatch, chess]);
     const makeMove = (pos) => {
         const from = fromPos.current;
         const to = pos;
