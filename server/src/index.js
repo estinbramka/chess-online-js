@@ -49,10 +49,10 @@ io.on('connection', (socket) => {
         const player = removePlayer(socket.id);
 
         if (player) {
-            io.to(player.game).emit('message', {
+            io.to(player.gameID).emit('message', {
                 message: `${player.name} has left the game.`,
             });
-            socket.broadcast.to(player.game).emit('opponentLeft');
+            socket.broadcast.to(player.gameID).emit('opponentLeft');
             console.log(`${player.name} has left the game ${player.gameID}`);
         }
     });
