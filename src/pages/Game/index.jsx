@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useContext } from 'react';
+import './game-styles.css';
 import { Chess } from 'chess.js';
 import io from 'socket.io-client';
 import { createBoard } from '../../functions';
@@ -7,8 +8,17 @@ import { GameContext } from '../../context/GameContext';
 import { types } from '../../context/actions';
 import { getGameOverState } from '../../functions/game-over.js';
 import GameOver from '../../components/gameover';
+import Player from '../../components/player';
+import Toast from '../../components/snackbar';
 import { useLocation, useHistory } from 'react-router-dom';
 import qs from 'query-string';
+import {
+	setMessage,
+	setOpponent,
+	setOpponentMoves,
+	setPlayer,
+	setPlayerColor,
+} from '../../context/actions';
 const FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
 const socket = io('localhost:5000');
@@ -17,7 +27,13 @@ const Game = () => {
 	const [fen, setFen] = useState(FEN);
 	const { current: chess } = useRef(new Chess(fen));
 	const [board, setBoard] = useState(createBoard(fen));
-	const { dispatch, gameOver } = useContext(GameContext);
+	const {
+        dispatch,
+        gameOver,
+        playerName: player,
+        opponentName,
+        playerColor,
+    } = useContext(GameContext);
 
 	const location = useLocation();
 	const history = useHistory();
@@ -42,24 +58,28 @@ const Game = () => {
 				if (error) {
 					history.push('/');
 				}
-				console.log({ color });
+				dispatch(setPlayer(playerName.current));
+				dispatch(setPlayerColor(color));
 			}
 		);
 		socket.on('welcome', ({ message, opponent }) => {
-			console.log({ message, opponent });
+			dispatch(setMessage(message));
+			dispatch(setOpponent(opponent));
 		});
 		socket.on('opponentJoin', ({ message, opponent }) => {
-			console.log({ message, opponent });
+			dispatch(setMessage(message));
+			dispatch(setOpponent(opponent));
 		});
-
 		socket.on('opponentMove', ({ from, to }) => {
 			chess.move({ from, to });
 			setFen(chess.fen());
+			dispatch(setMessage('Your Turn'));
+			dispatch(setOpponentMoves([from, to]));
 		});
 		socket.on('message', ({ message }) => {
-			console.log({ message });
+			dispatch(setMessage(message));
 		});
-	}, [chess, history]);
+	}, [chess, history, dispatch]);
 
 	useEffect(() => {
 		const [gameOver, status] = getGameOverState(chess);
@@ -96,7 +116,10 @@ const Game = () => {
 	}
 	return (
 		<div className="game">
+			<Player name={player} color={playerColor} player />
+            <Player name={opponentName} color={playerColor === 'w' ? 'b' : 'w'} />
 			<Board cells={board} makeMove={makeMove} setFromPos={setFromPos} />
+			<Toast />
 		</div>
 	);
 };
